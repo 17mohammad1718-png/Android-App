@@ -29,10 +29,10 @@
 
 ## ساخت و اجرا
 
-پروژه Gradle Wrapper کامل دارد و CI در هر push و pull request تست‌ها، lint و APK دیباگ را می‌سازد.
+پروژه Gradle Wrapper کامل و یک اسکریپت یکپارچه برای تست، lint و ساخت APK دیباگ دارد.
 
 1. پوشه را در **Android Studio** باز کنید (نسخه‌ی Ladybug یا جدیدتر).
-2. برای بررسی خط فرمان، `./gradlew testDebugUnitTest lintDebug assembleDebug` را اجرا کنید.
+2. برای بررسی خط فرمان، `./scripts/check.sh` را اجرا کنید.
 3. یک دستگاه/امولاتور با **API 29+** انتخاب و Run کنید.
 4. در صفحه‌ی Onboarding دکمه‌ی «اعطای دسترسی آمار مصرف» را بزنید و در تنظیمات سیستم،
    `DataGuard` را فعال کنید.

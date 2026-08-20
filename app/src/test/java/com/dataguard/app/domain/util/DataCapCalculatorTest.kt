@@ -80,7 +80,7 @@ class DataCapCalculatorTest {
         )
 
         assertEquals(1f, progress.percent)
-        assertEquals(0, progress.remainingBytes)
+        assertEquals(0L, progress.remainingBytes)
         assertNull(progress.predictedEndMillis)
     }
 
