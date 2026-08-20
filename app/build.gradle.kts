@@ -92,4 +92,7 @@ dependencies {
 
     // Charts
     implementation(libs.vico.compose.m3)
+
+    // Tests
+    testImplementation(libs.junit)
 }

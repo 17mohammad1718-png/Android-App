@@ -29,12 +29,10 @@
 
 ## ساخت و اجرا
 
-> این ریپو داخل یک sandbox بدون JDK/Gradle/Android SDK تولید شده، بنابراین
-> **بیلد باید روی دستگاه خودتان (Android Studio) انجام شود.**
+پروژه Gradle Wrapper کامل دارد و CI در هر push و pull request تست‌ها، lint و APK دیباگ را می‌سازد.
 
 1. پوشه را در **Android Studio** باز کنید (نسخه‌ی Ladybug یا جدیدتر).
-2. اگر فایل `gradle/wrapper/gradle-wrapper.jar` موجود نبود، Android Studio هنگام sync
-   به‌صورت خودکار Gradle را دانلود و wrapper را می‌سازد (یا از `gradle wrapper --gradle-version 8.10.2` استفاده کنید).
+2. برای بررسی خط فرمان، `./gradlew testDebugUnitTest lintDebug assembleDebug` را اجرا کنید.
 3. یک دستگاه/امولاتور با **API 29+** انتخاب و Run کنید.
 4. در صفحه‌ی Onboarding دکمه‌ی «اعطای دسترسی آمار مصرف» را بزنید و در تنظیمات سیستم،
    `DataGuard` را فعال کنید.
