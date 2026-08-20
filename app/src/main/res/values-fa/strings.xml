@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">دیتاگارد</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title">به دیتاگارد خوش آمدید</string>
+    <string name="onboarding_subtitle">مصرف اینترنت خود را — کاملاً آفلاین و روی همین دستگاه — پایش و مدیریت کنید.</string>
+    <string name="onboarding_permission_explanation">برای نمایش مصرف دیتا به تفکیک هر اپ، اندروید به مجوز «دسترسی به آمار مصرف» نیاز دارد. دیتاگارد فقط آمار مصرف را می‌خواند و هیچ‌وقت آن را جایی ارسال نمی‌کند.</string>
+    <string name="onboarding_grant_button">اعطای دسترسی آمار مصرف</string>
+    <string name="onboarding_battery_explanation">در برخی گوشی‌ها (شیائومی، هواوی، سامسونگ) بهینه‌سازی تهاجمی باتری ممکن است پایش پس‌زمینه را متوقف کند. پیشنهاد می‌کنیم آن را برای دیتاگارد غیرفعال کنید.</string>
+    <string name="onboarding_battery_button">غیرفعال‌کردن بهینه‌سازی باتری</string>
+    <string name="onboarding_features_title">چه چیزی دریافت می‌کنید</string>
+    <string name="onboarding_feature_1">مصرف لحظه‌ای وای‌فای و دیتای موبایل</string>
+    <string name="onboarding_feature_2">تفکیک مصرف به ازای هر اپ</string>
+    <string name="onboarding_feature_3">تاریخچهٔ روزانه، هفتگی و ماهانه</string>
+    <string name="onboarding_feature_4">سقف مصرف با هشدار</string>
+
+    <!-- Navigation -->
+    <string name="nav_dashboard">نمای کلی</string>
+    <string name="nav_apps">اپ‌ها</string>
+    <string name="nav_history">تاریخچه</string>
+    <string name="nav_settings">تنظیمات</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_today">امروز</string>
+    <string name="dashboard_total">مجموع</string>
+    <string name="dashboard_wifi">وای‌فای</string>
+    <string name="dashboard_mobile">موبایل</string>
+    <string name="dashboard_cap">سقف مصرف</string>
+    <string name="dashboard_cap_used">مصرف‌شده</string>
+    <string name="dashboard_cap_remaining">باقی‌مانده</string>
+    <string name="dashboard_cap_predicted">پیش‌بینی اتمام: %1$s</string>
+    <string name="dashboard_cap_set">تنظیم سقف مصرف</string>
+    <string name="dashboard_view_apps">مشاهدهٔ مصرف اپ‌ها</string>
+    <string name="dashboard_permission_missing">دسترسی آمار مصرف فعال نیست. برای فعال‌سازی به تنظیمات سیستم بروید.</string>
+    <string name="dashboard_open_settings">بازکردن تنظیمات</string>
+
+    <!-- App list -->
+    <string name="apps_period_day">امروز</string>
+    <string name="apps_period_week">۷ روز</string>
+    <string name="apps_period_month">۳۰ روز</string>
+    <string name="apps_empty">هنوز داده‌ای ثبت نشده است.</string>
+    <string name="apps_detail_wifi">وای‌فای</string>
+    <string name="apps_detail_mobile">موبایل</string>
+    <string name="apps_detail_total">مجموع</string>
+    <string name="apps_close">بستن</string>
+
+    <!-- History -->
+    <string name="history_title">تاریخچه</string>
+    <string name="history_empty">هنوز تاریخچه‌ای ثبت نشده است. داده‌ها در پس‌زمینه جمع‌آوری و اینجا نمایش داده می‌شوند.</string>
+    <string name="history_period_week">۷ روز</string>
+    <string name="history_period_month">۳۰ روز</string>
+
+    <!-- Data cap -->
+    <string name="cap_title">سقف مصرف</string>
+    <string name="cap_cycle_day">روز شروع چرخهٔ شارژ</string>
+    <string name="cap_cycle_day_value">روز %1$d</string>
+    <string name="cap_limit_gb">سقف ماهانه (گیگابایت)</string>
+    <string name="cap_threshold">آستانهٔ هشدار</string>
+    <string name="cap_threshold_value">%1$d٪</string>
+    <string name="cap_network">شبکه</string>
+    <string name="cap_network_mobile">موبایل</string>
+    <string name="cap_network_wifi">وای‌فای</string>
+    <string name="cap_network_both">هر دو</string>
+    <string name="cap_save">ذخیره</string>
+    <string name="cap_saved">ذخیره شد</string>
+    <string name="cap_invalid_limit">یک سقف معتبر وارد کنید</string>
+
+    <!-- Settings -->
+    <string name="settings_theme">تم</string>
+    <string name="settings_theme_system">سیستم</string>
+    <string name="settings_theme_light">روشن</string>
+    <string name="settings_theme_dark">تاریک</string>
+    <string name="settings_unit">واحد نمایش</string>
+    <string name="settings_unit_auto">خودکار</string>
+    <string name="settings_unit_mb">مگابایت</string>
+    <string name="settings_unit_gb">گیگابایت</string>
+    <string name="settings_usage_access">دسترسی آمار مصرف</string>
+    <string name="settings_battery">بهینه‌سازی باتری</string>
+    <string name="settings_battery_optimized">بهینه‌شده</string>
+    <string name="settings_battery_unrestricted">بدون محدودیت</string>
+    <string name="settings_open">بازکردن</string>
+    <string name="settings_about">درباره</string>
+    <string name="settings_about_text">دیتاگارد نسخهٔ %1$s — پایش‌گر مصرف اینترنتِ محلی. داده‌های شما هرگز از این دستگاه خارج نمی‌شوند.</string>
+
+    <!-- Common -->
+    <string name="common_back">بازگشت</string>
+    <string name="common_granted">فعال</string>
+    <string name="common_not_granted">فعال نیست</string>
+    <string name="common_loading">در حال بارگذاری…</string>
+    <string name="common_error">خطایی رخ داد</string>
+    <string name="common_retry">تلاش دوباره</string>
+</resources>

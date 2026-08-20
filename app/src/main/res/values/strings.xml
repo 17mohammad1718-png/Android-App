@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DataGuard</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title">Welcome to DataGuard</string>
+    <string name="onboarding_subtitle">Monitor and manage your internet usage — fully offline, right on your device.</string>
+    <string name="onboarding_permission_explanation">To show your data usage per app, Android requires the “Usage access” permission. DataGuard only reads usage statistics and never sends them anywhere.</string>
+    <string name="onboarding_grant_button">Grant usage access</string>
+    <string name="onboarding_battery_explanation">On some phones (Xiaomi, Huawei, Samsung) aggressive battery optimization can stop background monitoring. We recommend disabling it for DataGuard.</string>
+    <string name="onboarding_battery_button">Disable battery optimization</string>
+    <string name="onboarding_features_title">What you get</string>
+    <string name="onboarding_feature_1">Live Wi-Fi and mobile data usage</string>
+    <string name="onboarding_feature_2">Per-app breakdown</string>
+    <string name="onboarding_feature_3">Daily, weekly and monthly history</string>
+    <string name="onboarding_feature_4">Data cap with alerts</string>
+
+    <!-- Navigation -->
+    <string name="nav_dashboard">Overview</string>
+    <string name="nav_apps">Apps</string>
+    <string name="nav_history">History</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_today">Today</string>
+    <string name="dashboard_total">Total</string>
+    <string name="dashboard_wifi">Wi-Fi</string>
+    <string name="dashboard_mobile">Mobile</string>
+    <string name="dashboard_cap">Data cap</string>
+    <string name="dashboard_cap_used">Used</string>
+    <string name="dashboard_cap_remaining">Remaining</string>
+    <string name="dashboard_cap_predicted">Predicted to run out by %1$s</string>
+    <string name="dashboard_cap_set">Set data cap</string>
+    <string name="dashboard_view_apps">View app usage</string>
+    <string name="dashboard_permission_missing">Usage access is not granted. Open system settings to enable it.</string>
+    <string name="dashboard_open_settings">Open settings</string>
+
+    <!-- App list -->
+    <string name="apps_period_day">Today</string>
+    <string name="apps_period_week">7 days</string>
+    <string name="apps_period_month">30 days</string>
+    <string name="apps_empty">No usage data yet.</string>
+    <string name="apps_detail_wifi">Wi-Fi</string>
+    <string name="apps_detail_mobile">Mobile</string>
+    <string name="apps_detail_total">Total</string>
+    <string name="apps_close">Close</string>
+
+    <!-- History -->
+    <string name="history_title">History</string>
+    <string name="history_empty">No history yet. Data is collected in the background and will appear here.</string>
+    <string name="history_period_week">7 days</string>
+    <string name="history_period_month">30 days</string>
+
+    <!-- Data cap -->
+    <string name="cap_title">Data cap</string>
+    <string name="cap_cycle_day">Billing cycle start day</string>
+    <string name="cap_cycle_day_value">Day %1$d</string>
+    <string name="cap_limit_gb">Monthly limit (GB)</string>
+    <string name="cap_threshold">Alert threshold</string>
+    <string name="cap_threshold_value">%1$d%%</string>
+    <string name="cap_network">Network</string>
+    <string name="cap_network_mobile">Mobile</string>
+    <string name="cap_network_wifi">Wi-Fi</string>
+    <string name="cap_network_both">Both</string>
+    <string name="cap_save">Save</string>
+    <string name="cap_saved">Saved</string>
+    <string name="cap_invalid_limit">Enter a valid limit</string>
+
+    <!-- Settings -->
+    <string name="settings_theme">Theme</string>
+    <string name="settings_theme_system">System</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_unit">Display unit</string>
+    <string name="settings_unit_auto">Auto</string>
+    <string name="settings_unit_mb">MB</string>
+    <string name="settings_unit_gb">GB</string>
+    <string name="settings_usage_access">Usage access</string>
+    <string name="settings_battery">Battery optimization</string>
+    <string name="settings_battery_optimized">Optimized</string>
+    <string name="settings_battery_unrestricted">Unrestricted</string>
+    <string name="settings_open">Open</string>
+    <string name="settings_about">About</string>
+    <string name="settings_about_text">DataGuard v%1$s — a local-first internet usage monitor. Your data never leaves this device.</string>
+
+    <!-- Common -->
+    <string name="common_back">Back</string>
+    <string name="common_granted">Granted</string>
+    <string name="common_not_granted">Not granted</string>
+    <string name="common_loading">Loading…</string>
+    <string name="common_error">Something went wrong</string>
+    <string name="common_retry">Retry</string>
+</resources>
