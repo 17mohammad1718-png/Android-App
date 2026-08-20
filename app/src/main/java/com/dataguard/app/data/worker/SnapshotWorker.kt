@@ -1,0 +1,24 @@
+package com.dataguard.app.data.worker
+
+import android.content.Context
+import androidx.hilt.work.HiltWorker
+import androidx.work.CoroutineWorker
+import androidx.work.WorkerParameters
+import com.dataguard.app.domain.repository.SnapshotRepository
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
+
+@HiltWorker
+class SnapshotWorker @AssistedInject constructor(
+    @Assisted appContext: Context,
+    @Assisted workerParams: WorkerParameters,
+    private val snapshotRepository: SnapshotRepository,
+) : CoroutineWorker(appContext, workerParams) {
+
+    override suspend fun doWork(): Result = try {
+        snapshotRepository.captureAndStoreSnapshots()
+        Result.success()
+    } catch (_: Exception) {
+        if (runAttemptCount < 3) Result.retry() else Result.failure()
+    }
+}

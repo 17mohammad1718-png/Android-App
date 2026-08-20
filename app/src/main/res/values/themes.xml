@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        Compose renders the actual UI; this XML theme only sets a base
+        window theme (no action bar) before Compose takes over.
+    -->
+    <style name="Theme.DataGuard" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>

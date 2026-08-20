@@ -1,0 +1,16 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Simple signal/wave glyph centered in the adaptive-icon safe zone -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,34 L58,34 L58,74 L54,74 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,22 A14,14 0 0 1 68,36 L63,36 A9,9 0 0 0 54,27 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,10 A26,26 0 0 1 80,36 L75,36 A21,21 0 0 0 54,15 Z" />
+</vector>
