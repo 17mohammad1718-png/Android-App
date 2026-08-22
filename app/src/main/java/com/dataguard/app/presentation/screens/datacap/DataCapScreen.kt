@@ -48,61 +48,61 @@ class DataCapViewModel @Inject constructor(
     private val saveCap: SaveCapUseCase,
 ) : ViewModel() {
 
-    var cycleDay by mutableStateOf(1)
-        private set
-    var limitText by mutableStateOf("10")
-        private set
-    var threshold by mutableStateOf(80)
-        private set
-    var networkType by mutableStateOf(NetworkType.MOBILE)
-        private set
-    var saved by mutableStateOf(false)
-        private set
-    var invalidLimit by mutableStateOf(false)
-        private set
+    private var cycleDayState by mutableStateOf(1)
+    val cycleDay: Int get() = cycleDayState
+    private var limitTextState by mutableStateOf("10")
+    val limitText: String get() = limitTextState
+    private var thresholdState by mutableStateOf(80)
+    val threshold: Int get() = thresholdState
+    private var networkTypeState by mutableStateOf(NetworkType.MOBILE)
+    val networkType: NetworkType get() = networkTypeState
+    private var savedState by mutableStateOf(false)
+    val saved: Boolean get() = savedState
+    private var invalidLimitState by mutableStateOf(false)
+    val invalidLimit: Boolean get() = invalidLimitState
 
     init {
         viewModelScope.launch {
             observeCap().first()?.let { c ->
-                cycleDay = c.cycleStartDay
-                limitText = String.format(Locale.US, "%.0f", c.monthlyLimitBytes / GB)
-                threshold = c.alertThresholdPercent
-                networkType = c.networkType
+                cycleDayState = c.cycleStartDay
+                limitTextState = String.format(Locale.US, "%.0f", c.monthlyLimitBytes / GB)
+                thresholdState = c.alertThresholdPercent
+                networkTypeState = c.networkType
             }
         }
     }
 
     fun setCycleDay(v: Int) {
-        cycleDay = v
-        saved = false
+        cycleDayState = v
+        savedState = false
     }
 
     fun setLimitText(v: String) {
-        limitText = v
-        saved = false
-        invalidLimit = false
+        limitTextState = v
+        savedState = false
+        invalidLimitState = false
     }
 
     fun setThreshold(v: Int) {
-        threshold = v
-        saved = false
+        thresholdState = v
+        savedState = false
     }
 
     fun setNetworkType(v: NetworkType) {
-        networkType = v
-        saved = false
+        networkTypeState = v
+        savedState = false
     }
 
     fun save() {
-        val gb = limitText.toDoubleOrNull()
+        val gb = limitTextState.toDoubleOrNull()
         if (gb == null || gb <= 0) {
-            invalidLimit = true
+            invalidLimitState = true
             return
         }
         val bytes = (gb * GB).toLong()
         viewModelScope.launch {
-            saveCap(DataCap(cycleDay, bytes, threshold, networkType))
-            saved = true
+            saveCap(DataCap(cycleDayState, bytes, thresholdState, networkTypeState))
+            savedState = true
         }
     }
 }

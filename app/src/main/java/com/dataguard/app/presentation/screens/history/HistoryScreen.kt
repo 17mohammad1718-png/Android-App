@@ -64,9 +64,8 @@ class HistoryViewModel @Inject constructor(
     private val getHistory: GetHistoryUseCase,
 ) : ViewModel() {
 
-    var period by mutableStateOf(UsagePeriod.WEEK)
-        private set
-
+    private var periodState by mutableStateOf(UsagePeriod.WEEK)
+    val period: UsagePeriod get() = periodState
     private val _points = MutableStateFlow<List<HistoryPoint>>(emptyList())
     val points: StateFlow<List<HistoryPoint>> = _points
 
@@ -78,8 +77,8 @@ class HistoryViewModel @Inject constructor(
     }
 
     fun setPeriod(newPeriod: UsagePeriod) {
-        if (period == newPeriod) return
-        period = newPeriod
+        if (periodState == newPeriod) return
+        periodState = newPeriod
         load()
     }
 
