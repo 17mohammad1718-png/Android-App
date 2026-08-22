@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.dataguard.app.domain.model.AppSettings
 import com.dataguard.app.domain.repository.SettingsRepository
 import com.dataguard.app.presentation.navigation.AppNavHost
 import com.dataguard.app.presentation.theme.DataGuardTheme
@@ -22,7 +23,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            val settings by settingsRepository.settings.collectAsStateWithLifecycle()
+            val settings by settingsRepository.settings.collectAsStateWithLifecycle(
+                initialValue = AppSettings(),
+            )
             DataGuardTheme(themeMode = settings.themeMode) {
                 AppNavHost()
             }

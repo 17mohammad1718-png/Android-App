@@ -44,6 +44,8 @@ import com.dataguard.app.presentation.screens.applist.PeriodSelector
 import com.dataguard.app.presentation.theme.MobileColor
 import com.dataguard.app.presentation.theme.WifiColor
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
+import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
+import com.patrykandpatrick.vico.compose.cartesian.axis.rememberStart
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberColumnCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
 import com.patrykandpatrick.vico.core.cartesian.axis.HorizontalAxis

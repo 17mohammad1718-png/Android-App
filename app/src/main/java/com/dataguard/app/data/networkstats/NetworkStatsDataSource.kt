@@ -56,14 +56,9 @@ class NetworkStatsDataSource @Inject constructor(
     fun queryDeviceTotal(networkType: Int, start: Long, end: Long): Long {
         if (!hasUsageAccess()) return 0L
         return try {
-            var total = 0L
-            val stats = statsManager.querySummaryForDevice(networkType, null, start, end)
-            val bucket = NetworkStats.Bucket()
-            while (stats.hasNextBucket()) {
-                stats.getNextBucket(bucket)
-                total += bucket.rxBytes + bucket.txBytes
-            }
-            total
+            // querySummaryForDevice returns a single aggregate Bucket — no iteration needed.
+            val bucket = statsManager.querySummaryForDevice(networkType, null, start, end)
+            bucket.rxBytes + bucket.txBytes
         } catch (_: Exception) {
             0L
         }
