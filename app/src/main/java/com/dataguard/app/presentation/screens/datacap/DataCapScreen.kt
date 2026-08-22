@@ -60,6 +60,8 @@ class DataCapViewModel @Inject constructor(
     val saved: Boolean get() = savedState
     private var invalidLimitState by mutableStateOf(false)
     val invalidLimit: Boolean get() = invalidLimitState
+    private var saveFailedState by mutableStateOf(false)
+    val saveFailed: Boolean get() = saveFailedState
 
     init {
         viewModelScope.launch {
@@ -75,22 +77,26 @@ class DataCapViewModel @Inject constructor(
     fun setCycleDay(v: Int) {
         cycleDayState = v
         savedState = false
+        saveFailedState = false
     }
 
     fun setLimitText(v: String) {
         limitTextState = v
         savedState = false
+        saveFailedState = false
         invalidLimitState = false
     }
 
     fun setThreshold(v: Int) {
         thresholdState = v
         savedState = false
+        saveFailedState = false
     }
 
     fun setNetworkType(v: NetworkType) {
         networkTypeState = v
         savedState = false
+        saveFailedState = false
     }
 
     fun save() {
@@ -101,8 +107,12 @@ class DataCapViewModel @Inject constructor(
         }
         val bytes = (gb * GB).toLong()
         viewModelScope.launch {
-            saveCap(DataCap(cycleDayState, bytes, thresholdState, networkTypeState))
-            savedState = true
+            try {
+                saveCap(DataCap(cycleDayState, bytes, thresholdState, networkTypeState))
+                savedState = true
+            } catch (_: Exception) {
+                saveFailedState = true
+            }
         }
     }
 }
@@ -198,6 +208,14 @@ fun DataCapScreen(viewModel: DataCapViewModel = hiltViewModel()) {
                 text = stringResource(R.string.cap_saved),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.secondary,
+            )
+        }
+        if (viewModel.saveFailed) {
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = stringResource(R.string.common_error),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error,
             )
         }
     }

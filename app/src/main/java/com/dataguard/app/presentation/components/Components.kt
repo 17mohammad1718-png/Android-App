@@ -25,8 +25,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.dataguard.app.domain.model.AppUsage
 import com.dataguard.app.domain.util.ByteFormatter
+import com.dataguard.app.presentation.theme.LocalDisplayUnit
 import com.dataguard.app.presentation.theme.MobileColor
 import com.dataguard.app.presentation.theme.WifiColor
+
+/** Formats [bytes] using the ambient user display-unit preference. */
+@Composable
+fun formatBytes(bytes: Long): String =
+    ByteFormatter.format(bytes, LocalDisplayUnit.current)
 
 /** Horizontal bar showing the Wi-Fi vs mobile split. */
 @Composable
@@ -99,7 +105,7 @@ fun AppUsageRow(
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                text = ByteFormatter.format(app.totalBytes),
+                text = formatBytes(app.totalBytes),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

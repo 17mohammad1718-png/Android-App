@@ -56,6 +56,8 @@ object DataCapCalculator {
             .toLocalDate()
         val daysElapsed = (ChronoUnit.DAYS.between(cycleStartDate, now) + 1).coerceAtLeast(1)
         val predictedEndMillis = if (usedBytes > 0 && limit > usedBytes) {
+            // Uses fixed 24h days: DST shifts of up to an hour are deliberately
+            // ignored — this is an estimate, not an exact deadline.
             val averagePerDay = usedBytes.toDouble() / daysElapsed
             val daysLeft = remaining.toDouble() / averagePerDay
             nowMillis + (daysLeft * MILLIS_PER_DAY).toLong()

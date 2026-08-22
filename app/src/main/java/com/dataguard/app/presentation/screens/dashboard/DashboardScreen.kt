@@ -44,8 +44,8 @@ import com.dataguard.app.domain.repository.DataUsageRepository
 import com.dataguard.app.domain.usecase.ComputeCapProgressUseCase
 import com.dataguard.app.domain.usecase.GetTodayUsageUseCase
 import com.dataguard.app.domain.usecase.RefreshDataUseCase
-import com.dataguard.app.domain.util.ByteFormatter
 import com.dataguard.app.presentation.components.UsageBreakdownBar
+import com.dataguard.app.presentation.components.formatBytes
 import com.dataguard.app.presentation.theme.MobileColor
 import com.dataguard.app.presentation.theme.WifiColor
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -167,7 +167,7 @@ private fun TodayUsageCard(today: TodayUsage?) {
                 CircularProgressIndicator(Modifier.size(24.dp))
             } else {
                 Text(
-                    text = ByteFormatter.format(today.totalBytes),
+                    text = formatBytes(today.totalBytes),
                     style = MaterialTheme.typography.displaySmall,
                     color = MaterialTheme.colorScheme.primary,
                 )
@@ -180,13 +180,13 @@ private fun TodayUsageCard(today: TodayUsage?) {
                 ) {
                     NetworkStat(
                         label = stringResource(R.string.dashboard_wifi),
-                        value = ByteFormatter.format(today.wifiBytes),
+                        value = formatBytes(today.wifiBytes),
                         color = WifiColor,
                         modifier = Modifier.weight(1f),
                     )
                     NetworkStat(
                         label = stringResource(R.string.dashboard_mobile),
-                        value = ByteFormatter.format(today.mobileBytes),
+                        value = formatBytes(today.mobileBytes),
                         color = MobileColor,
                         modifier = Modifier.weight(1f),
                     )
@@ -255,13 +255,13 @@ private fun CapCard(
                 Spacer(Modifier.height(8.dp))
                 Text(
                     text = stringResource(R.string.dashboard_cap_used) + " " +
-                        ByteFormatter.format(progress.usedBytes) + " / " +
-                        ByteFormatter.format(progress.cap.monthlyLimitBytes),
+                        formatBytes(progress.usedBytes) + " / " +
+                        formatBytes(progress.cap.monthlyLimitBytes),
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Text(
                     text = stringResource(R.string.dashboard_cap_remaining) + " " +
-                        ByteFormatter.format(progress.remainingBytes),
+                        formatBytes(progress.remainingBytes),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
