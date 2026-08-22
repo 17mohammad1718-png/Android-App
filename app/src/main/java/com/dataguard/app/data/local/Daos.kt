@@ -16,6 +16,13 @@ interface UsageSnapshotDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(rows: List<UsageSnapshotEntity>)
+
+    @Query("SELECT MAX(timestamp) FROM usage_snapshot")
+    suspend fun latestTimestamp(): Long?
+
+    /** Prunes raw audit snapshots; returns the number of deleted rows. */
+    @Query("DELETE FROM usage_snapshot WHERE timestamp < :cutoffMillis")
+    suspend fun deleteOlderThan(cutoffMillis: Long): Int
 }
 
 @Dao

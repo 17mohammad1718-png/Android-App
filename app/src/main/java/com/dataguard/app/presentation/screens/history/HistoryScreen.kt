@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.ui.draw.clip
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -40,7 +41,9 @@ import com.dataguard.app.domain.model.HistoryPoint
 import com.dataguard.app.domain.model.UsagePeriod
 import com.dataguard.app.domain.usecase.GetHistoryUseCase
 import com.dataguard.app.domain.util.ByteFormatter
+import com.dataguard.app.presentation.components.formatBytes
 import com.dataguard.app.presentation.screens.applist.PeriodSelector
+import com.dataguard.app.presentation.theme.LocalDisplayUnit
 import com.dataguard.app.presentation.theme.MobileColor
 import com.dataguard.app.presentation.theme.WifiColor
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
@@ -58,6 +61,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.math.roundToInt
 
 @HiltViewModel
 class HistoryViewModel @Inject constructor(
@@ -72,6 +76,9 @@ class HistoryViewModel @Inject constructor(
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading
 
+    private val _error = MutableStateFlow(false)
+    val error: StateFlow<Boolean> = _error
+
     init {
         load()
     }
@@ -85,8 +92,14 @@ class HistoryViewModel @Inject constructor(
     fun load() {
         viewModelScope.launch {
             _loading.value = true
-            _points.value = getHistory(period)
-            _loading.value = false
+            _error.value = false
+            try {
+                _points.value = getHistory(period)
+            } catch (_: Exception) {
+                _error.value = true
+            } finally {
+                _loading.value = false
+            }
         }
     }
 }
@@ -96,6 +109,7 @@ class HistoryViewModel @Inject constructor(
 fun HistoryScreen(viewModel: HistoryViewModel = hiltViewModel()) {
     val points by viewModel.points.collectAsStateWithLifecycle()
     val loading by viewModel.loading.collectAsStateWithLifecycle()
+    val error by viewModel.error.collectAsStateWithLifecycle()
 
     Column(
         Modifier
@@ -121,6 +135,24 @@ fun HistoryScreen(viewModel: HistoryViewModel = hiltViewModel()) {
                     CircularProgressIndicator()
                 }
             }
+            error -> {
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(
+                        text = stringResource(R.string.common_error),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    Button(onClick = viewModel::load) {
+                        Text(stringResource(R.string.common_retry))
+                    }
+                }
+            }
             points.isEmpty() -> {
                 Text(
                     text = stringResource(R.string.history_empty),
@@ -140,11 +172,11 @@ fun HistoryScreen(viewModel: HistoryViewModel = hiltViewModel()) {
                 Column(Modifier.padding(horizontal = 16.dp)) {
                     TotalRow(
                         label = stringResource(R.string.dashboard_total),
-                        value = ByteFormatter.format(points.sumOf { it.totalBytes }),
+                        value = formatBytes(points.sumOf { it.totalBytes }),
                     )
                     LegendRow(
-                        wifi = ByteFormatter.format(points.sumOf { it.wifiBytes }),
-                        mobile = ByteFormatter.format(points.sumOf { it.mobileBytes }),
+                        wifi = formatBytes(points.sumOf { it.wifiBytes }),
+                        mobile = formatBytes(points.sumOf { it.mobileBytes }),
                     )
                 }
             }
@@ -204,6 +236,8 @@ private fun LegendItem(
 fun UsageChart(points: List<HistoryPoint>, modifier: Modifier = Modifier) {
     val modelProducer = remember { CartesianChartModelProducer() }
     val labels = remember(points) { points.map { it.label } }
+    // Captured here (composable scope) so the non-composable axis lambdas can use it.
+    val displayUnit = LocalDisplayUnit.current
 
     LaunchedEffect(points) {
         modelProducer.runTransaction {
@@ -221,12 +255,12 @@ fun UsageChart(points: List<HistoryPoint>, modifier: Modifier = Modifier) {
             rememberColumnCartesianLayer(),
             startAxis = VerticalAxis.rememberStart(
                 valueFormatter = CartesianValueFormatter { _, value, _ ->
-                    ByteFormatter.format(value.toLong())
+                    ByteFormatter.format(value.toLong(), displayUnit)
                 },
             ),
             bottomAxis = HorizontalAxis.rememberBottom(
                 valueFormatter = CartesianValueFormatter { _, value, _ ->
-                    val idx = value.toInt()
+                    val idx = value.roundToInt()
                     labels.getOrElse(idx) { "" }
                 },
             ),

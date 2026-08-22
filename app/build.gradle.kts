@@ -46,6 +46,12 @@ android {
         buildConfig = true
     }
 
+    // Export Room schemas so future migrations can be written (and tested)
+    // against a committed schema history in app/schemas.
+    ksp {
+        arg("room.schemaLocation", "$projectDir/schemas")
+    }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"

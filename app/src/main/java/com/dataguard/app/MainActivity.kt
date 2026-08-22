@@ -26,7 +26,10 @@ class MainActivity : ComponentActivity() {
             val settings by settingsRepository.settings.collectAsStateWithLifecycle(
                 initialValue = AppSettings(),
             )
-            DataGuardTheme(themeMode = settings.themeMode) {
+            DataGuardTheme(
+                themeMode = settings.themeMode,
+                displayUnit = settings.displayUnit,
+            ) {
                 AppNavHost()
             }
         }

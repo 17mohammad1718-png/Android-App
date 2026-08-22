@@ -6,8 +6,14 @@ import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import com.dataguard.app.domain.model.DisplayUnit
 import com.dataguard.app.domain.model.ThemeMode
+
+/** Ambient display unit; provided by [DataGuardTheme], read via [formatBytes]. */
+val LocalDisplayUnit = staticCompositionLocalOf { DisplayUnit.AUTO }
 
 // Brand palette
 val PrimaryBlue = Color(0xFF2E6BE6)
@@ -32,6 +38,7 @@ private val DarkColors = darkColorScheme(
 @Composable
 fun DataGuardTheme(
     themeMode: ThemeMode = ThemeMode.SYSTEM,
+    displayUnit: DisplayUnit = DisplayUnit.AUTO,
     content: @Composable () -> Unit,
 ) {
     val darkTheme = when (themeMode) {
@@ -40,9 +47,11 @@ fun DataGuardTheme(
         ThemeMode.SYSTEM -> isSystemInDarkTheme()
     }
     val colorScheme = if (darkTheme) DarkColors else LightColors
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography(),
-        content = content,
-    )
+    CompositionLocalProvider(LocalDisplayUnit provides displayUnit) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = Typography(),
+            content = content,
+        )
+    }
 }

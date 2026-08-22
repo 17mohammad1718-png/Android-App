@@ -16,7 +16,7 @@ import com.dataguard.app.data.local.entity.UsageSnapshotEntity
         AppDailyAggregateEntity::class,
     ],
     version = 1,
-    exportSchema = false,
+    exportSchema = true,
 )
 abstract class DataGuardDatabase : RoomDatabase() {
     abstract fun usageSnapshotDao(): UsageSnapshotDao
