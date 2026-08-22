@@ -51,6 +51,7 @@ class AppListViewModel @Inject constructor(
     private var periodState by mutableStateOf(UsagePeriod.DAY)
     val period: UsagePeriod get() = periodState
     private val _items = MutableStateFlow<List<AppUsage>>(emptyList())
+    val items: StateFlow<List<AppUsage>> = _items
 
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading
