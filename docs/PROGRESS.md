@@ -27,3 +27,19 @@
 16. **Duplicate Button Label** — "Set data cap" used for both label and button → Added separate "Edit data cap" / "ویرایش سقف مصرف"
 17. **ProGuard Rules Empty** — No rules defined → Added comprehensive rules for Hilt, Room, WorkManager, Compose, Vico, Coroutines
 18. **No coroutines-test dependency** — Added `kotlinx-coroutines-test` for future coroutine testing
+
+---
+
+## فاز ۳ کامل شد (۳ شهریور ۱۴۰۵)
+
+PR #7 (Arena) + مرج مستقیم Hermes:
+
+| # | مورد | نتیجه |
+|---|---|---|
+| ۱ | ۱۸ نقطه‌ضعف بازبینی (نشت NetworkStats، ANR، minify release، allowBackup، onboarding تکراری و...) | فیکس شد |
+| ۲ | نوتیفیکیشن هشدار ۵۰/۸۰/۱۰۰٪ سقف مصرف | پیاده شد |
+| ۳ | ایراد Hermes: هشدار هر ۱۵ دقیقه تکرار می‌شد | حافظه per-cycle اضافه شد — هر آستانه فقط یک بار در هر سیکل |
+| ۴ | خطای کامپایل ResultTest (استنتاج Nothing) | فیکس شد |
+| ۵ | تست‌ها: از ۲ فایل به ۹ فایل (۳۵ تست) | CI سبز |
+
+Issue #5 بسته شد. وضعیت: فازهای ۰–۳ ✅ | باقی: ویجت (۴)، پالیش (۵)، release امضاشده (۷)
