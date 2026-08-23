@@ -1,7 +1,11 @@
 package com.dataguard.app.presentation.screens.dashboard
 
+import android.Manifest
 import android.content.Intent
+import android.os.Build
 import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,83 +31,27 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewModelScope
 import com.dataguard.app.R
 import com.dataguard.app.domain.model.CapProgress
 import com.dataguard.app.domain.model.TodayUsage
-import com.dataguard.app.domain.repository.DataUsageRepository
-import com.dataguard.app.domain.usecase.ComputeCapProgressUseCase
-import com.dataguard.app.domain.usecase.GetTodayUsageUseCase
-import com.dataguard.app.domain.usecase.RefreshDataUseCase
 import com.dataguard.app.presentation.components.UsageBreakdownBar
 import com.dataguard.app.presentation.components.formatBytes
 import com.dataguard.app.presentation.theme.MobileColor
 import com.dataguard.app.presentation.theme.WifiColor
-import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
-import javax.inject.Inject
-
-@HiltViewModel
-class DashboardViewModel @Inject constructor(
-    private val usageRepository: DataUsageRepository,
-    private val getTodayUsage: GetTodayUsageUseCase,
-    private val computeCapProgress: ComputeCapProgressUseCase,
-    private val refreshData: RefreshDataUseCase,
-) : ViewModel() {
-
-    private val _todayUsage = MutableStateFlow<TodayUsage?>(null)
-    val todayUsage: StateFlow<TodayUsage?> = _todayUsage
-
-    private val _capProgress = MutableStateFlow<CapProgress?>(null)
-    val capProgress: StateFlow<CapProgress?> = _capProgress
-
-    private val _isRefreshing = MutableStateFlow(false)
-    val isRefreshing: StateFlow<Boolean> = _isRefreshing
-
-    private val _hasAccess = MutableStateFlow(true)
-    val hasAccess: StateFlow<Boolean> = _hasAccess
-
-    private val _error = MutableStateFlow<String?>(null)
-    val error: StateFlow<String?> = _error
-
-    init {
-        refresh()
-    }
-
-    fun refresh() {
-        viewModelScope.launch {
-            _isRefreshing.value = true
-            _error.value = null
-            try {
-                _hasAccess.value = usageRepository.hasUsageAccess()
-                if (_hasAccess.value) {
-                    refreshData()
-                    _todayUsage.value = getTodayUsage()
-                }
-                _capProgress.value = computeCapProgress()
-            } catch (e: Exception) {
-                _error.value = e.message
-            } finally {
-                _isRefreshing.value = false
-            }
-        }
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -112,14 +60,21 @@ fun DashboardScreen(
     viewModel: DashboardViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
-    val today by viewModel.todayUsage.collectAsStateWithLifecycle()
-    val capProgress by viewModel.capProgress.collectAsStateWithLifecycle()
-    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
-    val hasAccess by viewModel.hasAccess.collectAsStateWithLifecycle()
-    val error by viewModel.error.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // Request POST_NOTIFICATIONS on Android 13+ (needed for data cap alerts)
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { /* granted or denied — handled silently */ }
+
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
 
     PullToRefreshBox(
-        isRefreshing = isRefreshing,
+        isRefreshing = uiState.isRefreshing,
         onRefresh = viewModel::refresh,
         modifier = Modifier.fillMaxSize(),
     ) {
@@ -129,22 +84,22 @@ fun DashboardScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             when {
-                !hasAccess -> {
+                !uiState.hasAccess -> {
                     item {
                         PermissionCard {
                             context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
                         }
                     }
                 }
-                error != null -> {
+                uiState.error != null -> {
                     item { ErrorCard(onRetry = viewModel::refresh) }
                 }
                 else -> {
-                    item { TodayUsageCard(today) }
+                    item { TodayUsageCard(uiState.todayUsage) }
 
                     item {
                         CapCard(
-                            progress = capProgress,
+                            progress = uiState.capProgress,
                             onOpenCap = onOpenCap,
                         )
                     }
@@ -200,7 +155,7 @@ private fun TodayUsageCard(today: TodayUsage?) {
 private fun NetworkStat(
     label: String,
     value: String,
-    color: androidx.compose.ui.graphics.Color,
+    color: Color,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier) {
@@ -245,7 +200,7 @@ private fun CapCard(
                 )
                 Spacer(Modifier.height(12.dp))
                 Button(onClick = onOpenCap) {
-                    Text(stringResource(R.string.dashboard_cap_set))
+                    Text(stringResource(R.string.dashboard_cap_edit))
                 }
             } else {
                 LinearProgressIndicator(
@@ -278,7 +233,7 @@ private fun CapCard(
                 }
                 Spacer(Modifier.height(12.dp))
                 OutlinedButton(onClick = onOpenCap) {
-                    Text(stringResource(R.string.dashboard_cap_set))
+                    Text(stringResource(R.string.dashboard_cap_edit))
                 }
             }
         }

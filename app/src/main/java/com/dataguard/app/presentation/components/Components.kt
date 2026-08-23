@@ -1,5 +1,7 @@
 package com.dataguard.app.presentation.components
 
+import android.graphics.drawable.Drawable
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -18,11 +20,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.drawable.toBitmap
 import com.dataguard.app.domain.model.AppUsage
 import com.dataguard.app.domain.util.ByteFormatter
 import com.dataguard.app.presentation.theme.LocalDisplayUnit
@@ -76,6 +82,15 @@ fun AppUsageRow(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val context = LocalContext.current
+    val icon: Drawable? = remember(app.packageName) {
+        try {
+            context.packageManager.getApplicationIcon(app.packageName)
+        } catch (_: Exception) {
+            null
+        }
+    }
+
     Row(
         modifier
             .fillMaxWidth()
@@ -83,17 +98,28 @@ fun AppUsageRow(
             .padding(vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Surface(
-            shape = CircleShape,
-            color = MaterialTheme.colorScheme.primaryContainer,
-            modifier = Modifier.size(40.dp),
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Text(
-                    text = app.appName.take(1).uppercase(),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                )
+        if (icon != null) {
+            val bitmap = remember(app.packageName) { icon.toBitmap(80, 80).asImageBitmap() }
+            Image(
+                bitmap = bitmap,
+                contentDescription = app.appName,
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape),
+            )
+        } else {
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primaryContainer,
+                modifier = Modifier.size(40.dp),
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text(
+                        text = app.appName.take(1).uppercase(),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    )
+                }
             }
         }
         Spacer(Modifier.width(12.dp))

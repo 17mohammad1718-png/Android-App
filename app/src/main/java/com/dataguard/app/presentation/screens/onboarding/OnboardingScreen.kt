@@ -34,29 +34,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewModelScope
 import com.dataguard.app.R
-import com.dataguard.app.domain.repository.DataUsageRepository
-import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import javax.inject.Inject
-
-@HiltViewModel
-class OnboardingViewModel @Inject constructor(
-    private val usageRepository: DataUsageRepository,
-) : ViewModel() {
-
-    private val _granted = MutableStateFlow(false)
-    val granted: StateFlow<Boolean> = _granted
-
-    fun refresh() {
-        _granted.value = usageRepository.hasUsageAccess()
-    }
-}
 
 @Composable
 fun OnboardingScreen(

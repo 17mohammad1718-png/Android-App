@@ -1,5 +1,6 @@
 package com.dataguard.app.presentation.navigation
 
+import android.content.Context
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -20,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -41,6 +43,24 @@ sealed class Screen(val route: String) {
     data object History : Screen("history")
     data object DataCap : Screen("data_cap")
     data object Settings : Screen("settings")
+}
+
+/**
+ * Persists the onboarding-completed flag so the user doesn't see it again
+ * after process death or app restarts.
+ */
+object OnboardingPrefs {
+    private const val PREFS = "onboarding_prefs"
+    private const val KEY_COMPLETED = "onboarding_completed"
+
+    fun isCompleted(context: Context): Boolean =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .getBoolean(KEY_COMPLETED, false)
+
+    fun markCompleted(context: Context) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .edit().putBoolean(KEY_COMPLETED, true).apply()
+    }
 }
 
 private data class BottomNavItem(
@@ -71,9 +91,17 @@ private fun titleRes(route: String?): Int = when (route) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavHost() {
+    val context = LocalContext.current
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
+
+    // Skip onboarding if already completed.
+    val startDest = if (OnboardingPrefs.isCompleted(context)) {
+        Screen.Dashboard.route
+    } else {
+        Screen.Onboarding.route
+    }
 
     Scaffold(
         topBar = {
@@ -118,12 +146,13 @@ fun AppNavHost() {
     ) { padding ->
         NavHost(
             navController = navController,
-            startDestination = Screen.Onboarding.route,
+            startDestination = startDest,
             modifier = Modifier.padding(padding),
         ) {
             composable(Screen.Onboarding.route) {
                 OnboardingScreen(
                     onGranted = {
+                        OnboardingPrefs.markCompleted(context)
                         navController.navigate(Screen.Dashboard.route) {
                             popUpTo(Screen.Onboarding.route) { inclusive = true }
                         }

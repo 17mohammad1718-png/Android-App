@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.os.Process
+import android.util.Log
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -15,15 +16,19 @@ import javax.inject.Singleton
  * Mutable accumulation bucket for a single UID.
  * Keeps Wi-Fi and mobile rx/tx separate so raw snapshots stay faithful.
  */
-class AppUsageRaw(val uid: Int) {
-    var wifiRx: Long = 0
-    var wifiTx: Long = 0
-    var mobileRx: Long = 0
-    var mobileTx: Long = 0
-
+data class AppUsageRaw(
+    val uid: Int,
+    val wifiRx: Long = 0,
+    val wifiTx: Long = 0,
+    val mobileRx: Long = 0,
+    val mobileTx: Long = 0,
+) {
     val wifiBytes: Long get() = wifiRx + wifiTx
     val mobileBytes: Long get() = mobileRx + mobileTx
     val totalBytes: Long get() = wifiBytes + mobileBytes
+
+    fun withWifi(rx: Long, tx: Long) = copy(wifiRx = wifiRx + rx, wifiTx = wifiTx + tx)
+    fun withMobile(rx: Long, tx: Long) = copy(mobileRx = mobileRx + rx, mobileTx = mobileTx + tx)
 }
 
 /**
@@ -36,10 +41,20 @@ class AppUsageRaw(val uid: Int) {
 class NetworkStatsDataSource @Inject constructor(
     @ApplicationContext private val context: Context,
 ) {
+    companion object {
+        private const val TAG = "NetworkStatsDataSource"
+    }
+
     private val statsManager: NetworkStatsManager =
         context.getSystemService(Context.NETWORK_STATS_SERVICE) as NetworkStatsManager
 
     private val packageManager: PackageManager = context.packageManager
+
+    /**
+     * Cache for UID → (packageName, displayLabel) resolution.
+     * Cleared only on process death — UIDs are stable within a single boot.
+     */
+    private val resolveCache = mutableMapOf<Int, Pair<String, String>>()
 
     /** Whether the user has granted the special PACKAGE_USAGE_STATS app-op. */
     fun hasUsageAccess(): Boolean {
@@ -59,7 +74,8 @@ class NetworkStatsDataSource @Inject constructor(
             // querySummaryForDevice returns a single aggregate Bucket — no iteration needed.
             val bucket = statsManager.querySummaryForDevice(networkType, null, start, end)
             bucket.rxBytes + bucket.txBytes
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Log.w(TAG, "queryDeviceTotal failed for type=$networkType", e)
             0L
         }
     }
@@ -87,32 +103,40 @@ class NetworkStatsDataSource @Inject constructor(
         isWifi: Boolean,
     ) {
         try {
-            val stats = statsManager.queryDetails(networkType, null, start, end)
-            val bucket = NetworkStats.Bucket()
-            while (stats.hasNextBucket()) {
-                stats.getNextBucket(bucket)
-                val entry = map.getOrPut(bucket.uid) { AppUsageRaw(bucket.uid) }
-                if (isWifi) {
-                    entry.wifiRx += bucket.rxBytes
-                    entry.wifiTx += bucket.txBytes
-                } else {
-                    entry.mobileRx += bucket.rxBytes
-                    entry.mobileTx += bucket.txBytes
+            // Use .use {} to properly close NetworkStats and avoid resource leaks.
+            statsManager.queryDetails(networkType, null, start, end).use { stats ->
+                val bucket = NetworkStats.Bucket()
+                while (stats.hasNextBucket()) {
+                    stats.getNextBucket(bucket)
+                    val existing = map[bucket.uid] ?: AppUsageRaw(bucket.uid)
+                    map[bucket.uid] = if (isWifi) {
+                        existing.withWifi(bucket.rxBytes, bucket.txBytes)
+                    } else {
+                        existing.withMobile(bucket.rxBytes, bucket.txBytes)
+                    }
                 }
             }
-        } catch (_: Exception) {
-            // Ignore per-type failures; partial data is better than none.
+        } catch (e: Exception) {
+            Log.w(TAG, "accumulate failed for type=$networkType", e)
         }
     }
 
-    /** Resolve a UID to its (packageName, displayLabel). */
+    /** Resolve a UID to its (packageName, displayLabel), with caching. */
     fun resolveApp(uid: Int): Pair<String, String> {
+        resolveCache[uid]?.let { return it }
+        val result = resolveAppUncached(uid)
+        resolveCache[uid] = result
+        return result
+    }
+
+    private fun resolveAppUncached(uid: Int): Pair<String, String> {
         val pkg = packageManager.getPackagesForUid(uid)?.firstOrNull()
         if (pkg == null) return ("uid_$uid") to ("UID $uid")
         val label = try {
             val info = packageManager.getApplicationInfo(pkg, 0)
             packageManager.getApplicationLabel(info).toString()
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Log.d(TAG, "getApplicationInfo failed for $pkg", e)
             pkg
         }
         return pkg to label

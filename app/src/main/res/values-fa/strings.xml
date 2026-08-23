@@ -31,6 +31,7 @@
     <string name="dashboard_cap_remaining">باقی‌مانده</string>
     <string name="dashboard_cap_predicted">پیش‌بینی اتمام: %1$s</string>
     <string name="dashboard_cap_set">تنظیم سقف مصرف</string>
+    <string name="dashboard_cap_edit">ویرایش سقف مصرف</string>
     <string name="dashboard_view_apps">مشاهدهٔ مصرف اپ‌ها</string>
     <string name="dashboard_permission_missing">دسترسی آمار مصرف فعال نیست. برای فعال‌سازی به تنظیمات سیستم بروید.</string>
     <string name="dashboard_open_settings">بازکردن تنظیمات</string>
@@ -90,4 +91,10 @@
     <string name="common_loading">در حال بارگذاری…</string>
     <string name="common_error">خطایی رخ داد</string>
     <string name="common_retry">تلاش دوباره</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_name">هشدارهای سقف مصرف</string>
+    <string name="notification_channel_desc">هشدار هنگام نزدیک‌شدن مصرف به سقف تعیین‌شده.</string>
+    <string name="notification_cap_title">%1$d٪ سقف مصرف پر شد</string>
+    <string name="notification_cap_body">%1$s از %2$s در این دوره مصرف شده است.</string>
 </resources>

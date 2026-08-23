@@ -31,6 +31,7 @@
     <string name="dashboard_cap_remaining">Remaining</string>
     <string name="dashboard_cap_predicted">Predicted to run out by %1$s</string>
     <string name="dashboard_cap_set">Set data cap</string>
+    <string name="dashboard_cap_edit">Edit data cap</string>
     <string name="dashboard_view_apps">View app usage</string>
     <string name="dashboard_permission_missing">Usage access is not granted. Open system settings to enable it.</string>
     <string name="dashboard_open_settings">Open settings</string>
@@ -90,4 +91,10 @@
     <string name="common_loading">Loading…</string>
     <string name="common_error">Something went wrong</string>
     <string name="common_retry">Retry</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_name">Data cap alerts</string>
+    <string name="notification_channel_desc">Alerts when your data usage approaches the configured cap.</string>
+    <string name="notification_cap_title">Data cap %1$d%% reached</string>
+    <string name="notification_cap_body">You\'ve used %1$s out of %2$s this billing cycle.</string>
 </resources>

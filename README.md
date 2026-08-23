@@ -10,18 +10,18 @@
 | فاز ۰ — اسکلت پروژه (Compose + Hilt + Room + Onboarding) | ✅ |
 | فاز ۱ — MVP (مصرف امروز + لیست اپ‌ها + pull-to-refresh) | ✅ |
 | فاز ۲ — تاریخچه + WorkManager (snapshot دوره‌ای + نمودار) | ✅ |
-| فاز ۳ — مدیریت سقف مصرف و هشدار | 🟡 سقف و پیش‌بینی انجام شده؛ Notification در آستانه‌ها باقی‌مانده |
+| فاز ۳ — مدیریت سقف مصرف و هشدار | ✅ سقف + پیش‌بینی + Notification در آستانه‌های ۵۰/۸۰/۱۰۰٪ |
 | فاز ۴ — ویجت (Glance) | ⬜ |
-| فاز ۵ — پالیش (زبان/تم/واحد نمایش، تست چند برند) | 🟡 تم و واحد نمایش (فعال و وایر‌شده)؛ زبان درون‌اپ و تست چند برند باقی‌مانده |
+| فاز ۵ — پالیش (زبان/تم/واحد نمایش، تست چند برند) | 🟡 تم، واحد نمایش، و آیکون اپ فعال؛ زبان درون‌اپ باقی‌مانده |
 | فاز ۶ — کنترل پیشرفته با VPNService | ⬜ (اختیاری، ریسک بالا) |
-| فاز ۷ — آماده‌سازی نهایی | ⬜ |
+| فاز ۷ — آماده‌سازی نهایی | 🟡 Minify + ProGuard فعال |
 
 ## استک فنی
 
 - **زبان:** Kotlin 2.1.0
 - **UI:** Jetpack Compose (Material 3، BOM 2025.01.00)
 - **معماری:** MVVM + Clean Architecture (`data` / `domain` / `presentation`)
-- **دیتابیس:** Room 2.6.1 (KSP)
+- **دیتابیس:** Room 2.6.1 (KSP) با `fallbackToDestructiveMigration`
 - **کار پس‌زمینه:** WorkManager 2.10.0 + Hilt Worker
 - **نمودار:** Vico 2.0.1
 - **DI:** Hilt 2.53.1
@@ -49,6 +49,7 @@ com.dataguard.app
 ├── data/
 │   ├── local/               # Room entities, DAOs, database
 │   ├── networkstats/        # NetworkStatsManager wrapper + permission check
+│   ├── notification/        # DataCap notification helper
 │   ├── repository/          # impl های repository
 │   ├── settings/            # SharedPreferences settings
 │   └── worker/              # SnapshotWorker + scheduler
@@ -56,13 +57,45 @@ com.dataguard.app
 │   ├── model/               # مدل‌های دامنه
 │   ├── repository/          # interface های repository
 │   ├── usecase/             # use case ها
-│   └── util/                # ByteFormatter + DateUtils
+│   └── util/                # ByteFormatter + DateUtils + Result + DataCapCalculator
 └── presentation/
-    ├── navigation/          # NavHost + bottom navigation
+    ├── navigation/          # NavHost + bottom navigation + onboarding persistence
     ├── theme/               # تم Material 3
-    ├── components/          # کامپوننت‌های مشترک
+    ├── components/          # کامپوننت‌های مشترک (با آیکون اپ)
     └── screens/             # Onboarding / Dashboard / AppList / History / DataCap / Settings
+                             # (هر Screen و ViewModel در فایل جداگانه)
 ```
+
+## بهبودهای اعمال‌شده
+
+### امنیتی
+- `android:allowBackup="false"` — جلوگیری از بک‌آپ‌گیری از داده‌ها
+- `isMinifyEnabled = true` + `isShrinkResources = true` — code shrinking و obfuscation
+- ProGuard rules کامل برای Hilt, Room, WorkManager, Compose, Vico
+- بستن صحیح `NetworkStats` با `use {}` — جلوگیری از نشت منبع
+- `OnConflictStrategy.IGNORE` برای snapshot insert — جلوگیری از crash در duplicate
+
+### عملکرد
+- انتقال تمام I/O بلاک‌کننده به `Dispatchers.IO` با `withContext` — جلوگیری از ANR
+- Cache کردن `resolveApp` در `NetworkStatsDataSource` — جلوگیری از تکرار PackageManager queries
+- نمایش آیکون واقعی اپ‌ها در AppList
+
+### معماری
+- جداسازی ViewModel از Screen — هر کدام در فایل مستقل
+- `data class UiState` برای هر ViewModel — single source of truth
+- `Result<T>` sealed class — مدیریت ساختاریافته خطاها
+- `AppUsageRaw` تبدیل به immutable data class
+- `fallbackToDestructiveMigration()` برای Room
+
+### UX
+- ذخیره flag onboarding — کاربر دوباره Onboarding نمی‌بیند
+- Notification هشدار سقف مصرف در آستانه‌های ۵۰/۸۰/۱۰۰٪
+- دکمه «ویرایش سقف مصرف» جدا از label در Dashboard
+- Logging خطاها با `Log.e`/`Log.w` برای دیباگ
+
+### تست
+- ۹ فایل تست واحد (از ۲ فایل)
+- پوشش: DataCapCalculator, ByteFormatter, DateUtils, Result, AppUsageRaw, ViewModel UiState
 
 ## مدل داده (Room)
 
@@ -97,10 +130,10 @@ com.dataguard.app
   فعلاً مجموع (rx+tx) را نشان می‌دهند.
 - `AppDailyAggregate` به‌جای `id` از کلید ترکیبی `(date, appPackageName)` استفاده می‌کند تا
   `@Upsert` Room درست کار کند.
+- `allowBackup=false` انتخاب شده چون داده‌های مصرف اینترنت محرمانه محسوب می‌شوند.
 
 ## قدم‌های بعدی پیشنهادی
 
-1. **فاز ۳ (تکمیل):** Notification در آستانه‌های ۵۰/۸۰/۱۰۰٪ (نیازمند `POST_NOTIFICATIONS` در اندروید ۱۳+).
-2. **فاز ۴:** ویجت Jetpack Glance (نمایش درصد و باقی‌مانده).
-3. **فاز ۵:** انتخاب زبان درون‌اپ (Per-app locale)، بهبود UI/UX، تست چند برند.
-4. **فاز ۶ (اختیاری):** `VpnService` محلی برای بلاک اپ — فقط در صورت نیاز واقعی.
+1. **فاز ۴:** ویجت Jetpack Glance (نمایش درصد و باقی‌مانده).
+2. **فاز ۵:** انتخاب زبان درون‌اپ (Per-app locale)، تست چند برند.
+3. **فاز ۶ (اختیاری):** `VpnService` محلی برای بلاک اپ — فقط در صورت نیاز واقعی.

@@ -30,6 +30,9 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): DataGuardDatabase =
         Room.databaseBuilder(context, DataGuardDatabase::class.java, "dataguard.db")
+            // Destructive migration is acceptable for a local-first monitoring app:
+            // all data can be reconstructed from NetworkStatsManager on next refresh.
+            .fallbackToDestructiveMigration()
             .build()
 
     @Provides

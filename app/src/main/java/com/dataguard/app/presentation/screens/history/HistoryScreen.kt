@@ -25,21 +25,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewModelScope
 import com.dataguard.app.R
 import com.dataguard.app.domain.model.HistoryPoint
 import com.dataguard.app.domain.model.UsagePeriod
-import com.dataguard.app.domain.usecase.GetHistoryUseCase
 import com.dataguard.app.domain.util.ByteFormatter
 import com.dataguard.app.presentation.components.formatBytes
 import com.dataguard.app.presentation.screens.applist.PeriodSelector
@@ -56,60 +52,12 @@ import com.patrykandpatrick.vico.core.cartesian.axis.VerticalAxis
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianValueFormatter
 import com.patrykandpatrick.vico.core.cartesian.data.columnSeries
-import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
-import javax.inject.Inject
 import kotlin.math.roundToInt
-
-@HiltViewModel
-class HistoryViewModel @Inject constructor(
-    private val getHistory: GetHistoryUseCase,
-) : ViewModel() {
-
-    private var periodState by mutableStateOf(UsagePeriod.WEEK)
-    val period: UsagePeriod get() = periodState
-    private val _points = MutableStateFlow<List<HistoryPoint>>(emptyList())
-    val points: StateFlow<List<HistoryPoint>> = _points
-
-    private val _loading = MutableStateFlow(false)
-    val loading: StateFlow<Boolean> = _loading
-
-    private val _error = MutableStateFlow(false)
-    val error: StateFlow<Boolean> = _error
-
-    init {
-        load()
-    }
-
-    fun setPeriod(newPeriod: UsagePeriod) {
-        if (periodState == newPeriod) return
-        periodState = newPeriod
-        load()
-    }
-
-    fun load() {
-        viewModelScope.launch {
-            _loading.value = true
-            _error.value = false
-            try {
-                _points.value = getHistory(period)
-            } catch (_: Exception) {
-                _error.value = true
-            } finally {
-                _loading.value = false
-            }
-        }
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistoryScreen(viewModel: HistoryViewModel = hiltViewModel()) {
-    val points by viewModel.points.collectAsStateWithLifecycle()
-    val loading by viewModel.loading.collectAsStateWithLifecycle()
-    val error by viewModel.error.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Column(
         Modifier
@@ -117,7 +65,7 @@ fun HistoryScreen(viewModel: HistoryViewModel = hiltViewModel()) {
             .verticalScroll(rememberScrollState()),
     ) {
         PeriodSelector(
-            selected = viewModel.period,
+            selected = uiState.period,
             options = listOf(
                 UsagePeriod.WEEK to stringResource(R.string.history_period_week),
                 UsagePeriod.MONTH to stringResource(R.string.history_period_month),
@@ -127,7 +75,7 @@ fun HistoryScreen(viewModel: HistoryViewModel = hiltViewModel()) {
         )
 
         when {
-            loading -> {
+            uiState.loading -> {
                 Column(
                     Modifier.fillMaxWidth().padding(32.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -135,7 +83,7 @@ fun HistoryScreen(viewModel: HistoryViewModel = hiltViewModel()) {
                     CircularProgressIndicator()
                 }
             }
-            error -> {
+            uiState.error -> {
                 Column(
                     Modifier
                         .fillMaxWidth()
@@ -153,7 +101,7 @@ fun HistoryScreen(viewModel: HistoryViewModel = hiltViewModel()) {
                     }
                 }
             }
-            points.isEmpty() -> {
+            uiState.points.isEmpty() -> {
                 Text(
                     text = stringResource(R.string.history_empty),
                     style = MaterialTheme.typography.bodyMedium,
@@ -164,7 +112,7 @@ fun HistoryScreen(viewModel: HistoryViewModel = hiltViewModel()) {
             else -> {
                 Card(Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
                     UsageChart(
-                        points = points,
+                        points = uiState.points,
                         modifier = Modifier.padding(16.dp),
                     )
                 }
@@ -172,11 +120,11 @@ fun HistoryScreen(viewModel: HistoryViewModel = hiltViewModel()) {
                 Column(Modifier.padding(horizontal = 16.dp)) {
                     TotalRow(
                         label = stringResource(R.string.dashboard_total),
-                        value = formatBytes(points.sumOf { it.totalBytes }),
+                        value = formatBytes(uiState.points.sumOf { it.totalBytes }),
                     )
                     LegendRow(
-                        wifi = formatBytes(points.sumOf { it.wifiBytes }),
-                        mobile = formatBytes(points.sumOf { it.mobileBytes }),
+                        wifi = formatBytes(uiState.points.sumOf { it.wifiBytes }),
+                        mobile = formatBytes(uiState.points.sumOf { it.mobileBytes }),
                     )
                 }
             }
@@ -208,7 +156,7 @@ private fun LegendRow(wifi: String, mobile: String) {
 
 @Composable
 private fun LegendItem(
-    color: androidx.compose.ui.graphics.Color,
+    color: Color,
     label: String,
     value: String,
 ) {
@@ -236,7 +184,6 @@ private fun LegendItem(
 fun UsageChart(points: List<HistoryPoint>, modifier: Modifier = Modifier) {
     val modelProducer = remember { CartesianChartModelProducer() }
     val labels = remember(points) { points.map { it.label } }
-    // Captured here (composable scope) so the non-composable axis lambdas can use it.
     val displayUnit = LocalDisplayUnit.current
 
     LaunchedEffect(points) {
