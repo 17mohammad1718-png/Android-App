@@ -25,84 +25,27 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewModelScope
 import com.dataguard.app.R
 import com.dataguard.app.domain.model.AppUsage
 import com.dataguard.app.domain.model.UsagePeriod
-import com.dataguard.app.domain.usecase.GetAppUsageUseCase
-import com.dataguard.app.domain.util.DateUtils
 import com.dataguard.app.presentation.components.AppUsageRow
 import com.dataguard.app.presentation.components.formatBytes
-import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
-import java.time.LocalDate
-import javax.inject.Inject
-
-@HiltViewModel
-class AppListViewModel @Inject constructor(
-    private val getAppUsage: GetAppUsageUseCase,
-) : ViewModel() {
-
-    private var periodState by mutableStateOf(UsagePeriod.DAY)
-    val period: UsagePeriod get() = periodState
-    private val _items = MutableStateFlow<List<AppUsage>>(emptyList())
-    val items: StateFlow<List<AppUsage>> = _items
-
-    private val _loading = MutableStateFlow(false)
-    val loading: StateFlow<Boolean> = _loading
-
-    private val _error = MutableStateFlow(false)
-    val error: StateFlow<Boolean> = _error
-
-    init {
-        load()
-    }
-
-    fun setPeriod(newPeriod: UsagePeriod) {
-        if (periodState == newPeriod) return
-        periodState = newPeriod
-        load()
-    }
-
-    fun load() {
-        viewModelScope.launch {
-            _loading.value = true
-            _error.value = false
-            try {
-                val start = when (period) {
-                    UsagePeriod.DAY -> DateUtils.startOfDayMillis()
-                    UsagePeriod.WEEK -> DateUtils.startOfDayMillis(LocalDate.now().minusDays(6))
-                    UsagePeriod.MONTH -> DateUtils.startOfDayMillis(LocalDate.now().minusDays(29))
-                }
-                _items.value = getAppUsage(start, System.currentTimeMillis())
-            } catch (_: Exception) {
-                _error.value = true
-            } finally {
-                _loading.value = false
-            }
-        }
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppListScreen(viewModel: AppListViewModel = hiltViewModel()) {
-    val items by viewModel.items.collectAsStateWithLifecycle()
-    val loading by viewModel.loading.collectAsStateWithLifecycle()
-    val error by viewModel.error.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var selectedApp by remember { mutableStateOf<AppUsage?>(null) }
 
     Column(Modifier.fillMaxSize()) {
         PeriodSelector(
-            selected = viewModel.period,
+            selected = uiState.period,
             options = listOf(
                 UsagePeriod.DAY to stringResource(R.string.apps_period_day),
                 UsagePeriod.WEEK to stringResource(R.string.apps_period_week),
@@ -113,21 +56,21 @@ fun AppListScreen(viewModel: AppListViewModel = hiltViewModel()) {
         )
 
         when {
-            loading -> {
+            uiState.loading -> {
                 Column(
                     Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
                 ) {
-                    CircularProgressIndicator(Modifier.align(androidx.compose.ui.Alignment.CenterHorizontally))
+                    CircularProgressIndicator(Modifier.align(Alignment.CenterHorizontally))
                 }
             }
-            error -> {
+            uiState.error -> {
                 Column(
                     Modifier
                         .fillMaxSize()
                         .padding(24.dp),
                     verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Text(
                         text = stringResource(R.string.common_error),
@@ -140,7 +83,7 @@ fun AppListScreen(viewModel: AppListViewModel = hiltViewModel()) {
                     }
                 }
             }
-            items.isEmpty() -> {
+            uiState.items.isEmpty() -> {
                 Column(
                     Modifier
                         .fillMaxSize()
@@ -162,7 +105,10 @@ fun AppListScreen(viewModel: AppListViewModel = hiltViewModel()) {
                         vertical = 8.dp,
                     ),
                 ) {
-                    items(items, key = { it.uid.toString() + it.packageName }) { app ->
+                    items(
+                        uiState.items,
+                        key = { it.uid.toString() + it.packageName },
+                    ) { app ->
                         AppUsageRow(app = app, onClick = { selectedApp = app })
                     }
                 }

@@ -14,7 +14,12 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface UsageSnapshotDao {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    /**
+     * Insert raw audit snapshots. Uses IGNORE because this table is append-only
+     * and the worker may occasionally re-run for the same interval; duplicates
+     * are silently skipped rather than causing a failure.
+     */
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAll(rows: List<UsageSnapshotEntity>)
 
     @Query("SELECT MAX(timestamp) FROM usage_snapshot")
