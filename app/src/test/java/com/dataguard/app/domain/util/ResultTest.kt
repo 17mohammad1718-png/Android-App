@@ -25,8 +25,11 @@ class ResultTest {
         assertFalse(result.isSuccess)
         assertTrue(result.isError)
         assertNull(result.getOrNull())
-        assertEquals(0, result.getOrDefault(0))
         assertEquals("test error", result.errorMessage())
+        // Explicit Int type parameter: Error is Result<Nothing>, so the bare
+        // literal would infer Nothing and fail to compile.
+        val typed: Result<Int> = Result.Error(exception)
+        assertEquals(0, typed.getOrDefault(0))
     }
 
     @Test

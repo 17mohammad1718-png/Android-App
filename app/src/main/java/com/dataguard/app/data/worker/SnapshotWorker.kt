@@ -37,11 +37,16 @@ class SnapshotWorker @AssistedInject constructor(
     private suspend fun checkCapNotification() {
         try {
             val progress = computeCapProgress() ?: return
+            val cycleStartDay = java.time.Instant.ofEpochMilli(progress.cycleStartMillis)
+                .atZone(java.time.ZoneId.systemDefault())
+                .toLocalDate()
+                .toEpochDay()
             notificationHelper.notifyThresholdIfNeeded(
                 percent = progress.percent,
                 thresholdPercent = progress.cap.alertThresholdPercent,
                 usedBytes = progress.usedBytes,
                 limitBytes = progress.cap.monthlyLimitBytes,
+                cycleStartEpochDay = cycleStartDay,
             )
         } catch (e: Exception) {
             Log.w(TAG, "checkCapNotification failed", e)
